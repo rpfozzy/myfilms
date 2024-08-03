@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои Фильмы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --text-color: #00aaff;
+            --accent-color: #0f3460;
+            --gradient-start: #0f0c29;
+            --gradient-mid: #302b63;
+            --gradient-end: #24243e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #00aaff; /* Голубой цвет текста */
+text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Легкая тень для мягкого эффекта */
+        }
+
+        .genre-filter {
+            position: relative;
+        }
+
+        .genre-btn {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с прозрачностью */
+        }
+
+        .genre-btn:hover {
+            background-color: var(--text-color);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .genre-dropdown {
+            display: none;
+            position: absolute;
+            background-color: var(--secondary-color);
+            min-width: 180px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+        }
+
+        .genre-dropdown a {
+            color: var(--text-color);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .genre-dropdown a:hover {
+            background-color: var(--accent-color);
+        }
+
+        .movies-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+
+        .movie-card {
+            background-color: var(--secondary-color);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            width: 220px;
+            height: 380px;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover .movie-poster {
+            transform: scale(1.05);
+        }
+
+        .movie-info {
+            padding: 15px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .movie-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .movie-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #a0a0a0;
+        }
+
+        .movie-detail {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 3px 6px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            color: #ffffff;
+            display: inline-block;
+        }
+
+     
+
+        .loading {
+            background: linear-gradient(90deg, var(--secondary-color) 25%, var(--primary-color) 50%, var(--secondary-color) 75%);
+            background-size: 200% 100%;
+            animation: loadingAnimation 1.5s infinite;
+        }
+
+        .loaded .movie-poster,
+        .loaded .movie-info {
+            opacity: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .movies-grid {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .movie-card {
+                width: 180px;
+                height: 340px;
+            }
+            
+            .movie-poster {
+                height: 240px;
+            }
+            
+            .movie-title {
+                font-size: 1rem;
+            }
+        }
+    @keyframes loadingAnimation {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.loading-placeholder {
+    width: 100%;
+    height: 280px; /* Высота совпадает с высотой изображения */
+    background: linear-gradient(90deg, var(--secondary-color) 25%, rgba(255, 255, 255, 0.2) 50%, var(--secondary-color) 75%);
+    background-size: 200% 100%;
+    animation: loadingAnimation 1.5s infinite;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Мои Фильмы</h1>
+            <div class="genre-filter">
+                <button class="genre-btn">Выбрать жанр</button>
+                <div class="genre-dropdown">
+                    <a href="#" data-genre="all">Все жанры</a>
+                    <a href="#" data-genre="фантастика">Фантастика</a>
+                    <a href="#" data-genre="триллеры">Триллеры</a>
+                    <a href="#" data-genre="криминал">Криминал</a>
+                    <a href="#" data-genre="боевик">Боевик</a>
+                                        <a href="#" data-genre="драмы">Драмы</a>
+                                        <a href="#" data-genre="сериалы">Сериалы</a>
+                                                            <a href="#" data-genre="ужасы">Ужасы</a>
+                                                                                <a href="#" data-genre="детектив">Детектив</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="movies-grid">
+            <!-- Movie cards will be dynamically added here -->
+        </main>
+    </div>
+
+    <script>
+        const movies = [
+            {
+                title: "Интерстеллар",
+                year: 2014,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 49мин",
+                poster: "https://telegra.ph/file/db182ed6922f23e809f73.jpg"
+            },
+            {
+                title: "Чужой: Ромул",
+                year: 2024,
+                                country: "Великобритания",
+                genre: "Триллеры",
+                duration: "1ч и 59мин",
+                poster: "https://telegra.ph/file/a12c75c0dd70a9130ff7f.jpg"
+            },
+            {
+                title: "Чужой: Завет",
+                year: 2017,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "2ч и 3мины",
+                poster: "https://www.acmodasi.pro/amdb/images/movie/w500/n/s/alien-covenant-370738.webp"
+            },
+            {
+                title: "Чужой: Прометей",
+                year: 2012,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "2ч и 4мины",
+                poster: "https://telegra.ph/file/dd58825c65fb4530a79c4.jpg"
+            },
+            {
+                title: "Чужой: Воскрешение",
+                year: 1997,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 49мин",
+                poster: "https://telegra.ph/file/a3cdbbb56eac57677c44c.jpg"
+            },
+            {
+                title: "Чужой 3",
+                year: 1992,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 54мины",
+                poster: "https://telegra.ph/file/f3e6cfd1babdd16d34831.jpg"
+            },
+            {
+                title: "Чужие",
+                year: 1986,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "2ч и 17мин",
+                poster: "https://telegra.ph/file/603b6dc8b330373cb81f7.jpg"
+            },
+            {
+                title: "Чужой",
+                year: 1979,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 57мин",
+                poster: "https://telegra.ph/file/5629e2e2576fef5d48d72.jpg"
+            },
+            {
+            title: "Живое",
+                year: 2017,
+                                country: "Великобритания",
+                genre: "Триллеры",
+                duration: "1ч и 50мин",
+                poster: "https://telegra.ph/file/e59b515f84b3effb7c230.jpg"
+            },
+             {
+            title: "Район №9",
+                year: 2009,
+                                country: "США",
+                genre: "Боевик",
+                duration: "1ч и 52мин",
+                poster: "https://telegra.ph/file/6bce4bd81012c2f6fa79c.jpg"
+            },
+             {
+            title: "2012",
+                year: 2009,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 38мин",
+                poster: "https://images.kinorium.com/movie/poster/440608/w1500_3508415.jpg"
+            },
+            {
+            title: "Чёрная Материя",
+                year: 2015,
+                                country: "Канада",
+                genre: "Сериалы",
+                duration: "3сезона",
+                poster: "https://image.tmdb.org/t/p/original/zS1zPcV3Iv8hLLsvBqzbJK1XNCF.jpg"
+            },
+            {
+            title: "Грань",
+                year: 2008,
+                                country: "США",
+                genre: "Сериалы",
+                duration: "5сезона",
+                poster: "https://images.kinorium.com/movie/poster/430245/w1500_50170963.jpg"
+            },
+             {
+            title: "Море Спокойствия",
+                year: 2021,
+                                country: "Южная Корея",
+                genre: "Сериалы",
+                duration: "1сезон",
+                poster: "https://images.kinorium.com/movie/poster/2650986/w1500_50336797.jpg"
+            },
+             {
+            title: "Элизиум: Рай не на Земле",
+                year: 2013,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 49мин",
+                poster: "https://images.kinorium.com/movie/poster/505888/w1500_3003123.jpg"
+            },
+             {
+            title: "Марсианин",
+                year: 2015,
+                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 21мин",
+                poster: "https://images.kinorium.com/movie/poster/777065/w1500_51624382.jpg"
+            },
+             {
+            title: "День независимости",
+                year: 2016,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 55мин",
+                poster: "https://images.kinorium.com/movie/poster/527911/w1500_3019836.jpg"
+            },
+             {
+            title: "День независимости",
+                year: 1996,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 25мин",
+                poster: "https://images.kinorium.com/movie/poster/105834/w1500_51643582.jpg"
+            },
+             {
+            title: "Новая Эра Z",
+                year: 2016,
+                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 51мин",
+                poster: "https://images.kinorium.com/movie/poster/1554091/w1500_50469518.jpg"
+            },
+            {
+            title: "Финч",
+                year: 2021,
+                                country: "Великобритания",
+                genre: "Фантастика",
+                duration: "1ч и 55мин",
+                poster: "https://images.kinorium.com/movie/poster/758989/w1500_50000997.jpg"
+            },
+            {
+            title: "Веном 2",
+                year: 2021,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 37мин",
+                poster: "https://images.kinorium.com/movie/poster/2041895/w1500_51079488.jpg"
+            },
+            {
+            title: "Морбиус",
+                year: 2022,
+                                country: "США",
+                genre: "Боевик",
+                duration: "1ч и 44мин",
+                poster: "https://images.kinorium.com/movie/poster/1467380/w1500_50362702.jpg"
+            },
+            {
+            title: "Веном",
+                year: 2018,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 53мин",
+                poster: "https://images.kinorium.com/movie/poster/453484/w1500_51624488.jpg"
+            },
+            {
+            title: "Спасение",
+                year: 2017,
+                country: "США",
+                genre: "Сериалы",
+                duration: "2сезона",
+                poster: "https://images.kinorium.com/movie/poster/1607689/w1500_2780931.jpg"
+            },
+            {
+            title: "Послезавтра",
+                year: 2004,
+                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 4мин",
+                poster: "https://images.kinorium.com/movie/poster/251984/w1500_51625723.jpg"
+            },
+            {
+            title: "Геошторм",
+                year: 2017,
+                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 49мин",
+                poster: "https://images.kinorium.com/movie/poster/592775/w1500_50245196.jpg"
+            },
+             {
+            title: "Блуждающая Земля 2",
+                year: 2023,
+                country: "Китай",
+                genre: "Фантастика",
+                duration: "2ч и 53мин",
+                poster: "https://images.kinorium.com/movie/poster/2669259/w1500_51769944.jpg"
+            },
+             {
+            title: "Блуждающая Земля",
+                year: 2019,
+                country: "Китай",
+                genre: "Фантастика",
+                duration: "2ч и 5мин",
+                poster: "https://images.kinorium.com/movie/poster/1658575/w1500_50482702.jpg"
+            },
+            {
+            title: "Бегущий В Лабиринте 3",
+                year: 2018,
+                country: "США",
+                genre: "Триллеры",
+                duration: "2ч и 23мин",
+                poster: "https://images.kinorium.com/movie/poster/1446880/w1500_49019598.jpg"
+            },
+            {
+            title: "Бегущий В Лабиринте 2",
+                year: 2015,
+                country: "США",
+                genre: "Триллеры",
+                duration: "2ч и 11мин",
+                poster: "https://images.kinorium.com/movie/poster/1442853/w1500_50518548.jpg"
+            },
+            {
+            title: "Бегущий В Лабиринте",
+                year: 2014,
+                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 53мин",
+                poster: "https://images.kinorium.com/movie/poster/560029/w1500_3537127.jpg"
+            },
+            {
+            title: "Затерянные в космосе",
+                year: 1998,
+                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 10мин",
+                poster: "https://images.kinorium.com/movie/poster/109310/w1500_51983612.jpg"
+            },
+            {
+            title: "Риддик",
+                year: 2013,
+                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 59мин",
+                poster: "https://images.kinorium.com/movie/poster/480669/w1500_50172650.jpg"
+            },
+            {
+            title: "Хроники Риддика",
+                year: 2004,
+                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 14мин",
+                poster: "https://images.kinorium.com/movie/poster/236528/w1500_51638344.jpg"
+            },
+            {
+            title: "Чёрная Дыра",
+                year: 2004,
+                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 48мин",
+                poster: "https://images.kinorium.com/movie/poster/117799/w1500_51847199.jpg"
+            },
+             {
+            title: "Гренландия",
+                year: 2020,
+                country: "Великобритания",
+                genre: "Боевики",
+                duration: "1ч и 59мин",
+                poster: "https://images.kinorium.com/movie/poster/1677879/w1500_51478024.jpg"
+            },
+             {
+            title: "Эверест",
+                year: 2015,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "2ч и 1мин",
+                poster: "https://images.kinorium.com/movie/poster/690414/w1500_50359216.jpg"
+            },
+            {
+            title: "Переводчик",
+                year: 2023,
+                                country: "Испания",
+                genre: "Боевик",
+                duration: "2ч и 2мин",
+                poster: "https://images.kinorium.com/movie/poster/1449183/w1500_51815317.jpg"
+            },
+            {
+            title: "Знамение",
+                year: 2009,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 1мин",
+                poster: "https://images.kinorium.com/movie/poster/339511/w1500_50178984.jpg"
+            },
+             {
+            title: "Пятое Измерение",
+                year: 2009,
+                country: "Канада",
+                genre: "Фантастика",
+                duration: "1ч и 51мин",
+                poster: "https://images.kinorium.com/movie/poster/350664/w1500_51942275.jpg"
+            },
+            {
+            title: "13 Жизней",
+                year: 2022,
+                                country: "Великобритания",
+                genre: "Драмы",
+                duration: "2ч и 27мин",
+                poster: "https://images.kinorium.com/movie/poster/2393751/w1500_51168212.jpg"
+            },
+             {
+            title: "Санктум",
+                year: 2010,
+                                country: "Австралия",
+                genre: "Драмы",
+                duration: "1ч и 49мин",
+                poster: "https://ru-images.kinorium.com/movie/1080/397630.jpg?1679613452"
+            },
+            {
+            title: "Спасение Из Пещеры",
+                year: 2022,
+                                country: "Таиланд",
+                genre: "Драмы",
+                duration: "1ч и 39мин",
+                poster: "https://images.kinorium.com/movie/poster/2862646/w1500_51140680.jpg"
+            },
+            {
+            title: "Репродукция",
+                year: 2018,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 43мин",
+                poster: "https://images.kinorium.com/movie/poster/1442491/w1500_50333486.jpg"
+            },
+            {
+            title: "Воздушное Ограбление",
+                year: 2024,
+                                country: "США",
+                genre: "Криминал",
+                duration: "1ч и 47мин",
+                poster: "https://images.kinorium.com/movie/poster/2739012/w1500_52378770.jpg"
+            },
+            {
+            title: "Пчеловод",
+                year: 2024,
+                                country: "США",
+                genre: "Боевик",
+                duration: "1ч и 45мин",
+                poster: "https://ru-images.kinorium.com/movie/1080/2816102.jpg?1697696051"
+            },
+            {
+            title: "Шестеро Вне Закона",
+                year: 2019,
+                                country: "США",
+                genre: "Боевик",
+                duration: "2ч и 8мин",
+                poster: "https://images.kinorium.com/movie/poster/1665586/w1500_52138306.jpg"
+            },
+             {
+            title: "Оно 2",
+                year: 2019,
+                                country: "Канада",
+                genre: "Ужасы",
+                duration: "2ч и 49мин",
+                poster: "https://images.kinorium.com/movie/poster/630540/w1500_51625696.jpg"
+            },
+             {
+            title: "Оно",
+                year: 2017,
+                                country: "США",
+                genre: "Ужасы",
+                duration: "2ч и 15мин",
+                poster: "https://images.kinorium.com/movie/poster/477866/w1500_51624444.jpg"
+            },
+            {
+            title: "Неуправляемый",
+                year: 2010,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 38мин",
+                poster: "https://images.kinorium.com/movie/poster/358190/w1500_50229869.jpg"
+            },
+            {
+            title: "Иллюзия Обмана 2",
+                year: 2016,
+                                country: "Франция",
+                genre: "Криминал",
+                duration: "2ч и 9мин",
+                poster: "https://telegra.ph/file/0afcf54141fb7ab2c910a.jpg"
+            },
+             {
+            title: "Иллюзия Обмана",
+                year: 2013,
+                                country: "Франция",
+                genre: "Криминал",
+                duration: "1ч и 55мин",
+                poster: "https://telegra.ph/file/4cb6f5962b40d3181a4fb.jpg"
+            },
+            {
+            title: "57 секунд",
+                year: 2017,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 39мин",
+                poster: "https://images.kinorium.com/movie/poster/8532571/w1500_51961845.jpg"
+            },
+            {
+            title: "Паразиты",
+                year: 2019,
+                                country: "Корея Южная",
+                genre: "Триллеры",
+                duration: "2ч и 11мин",
+                poster: "https://images.kinorium.com/movie/poster/2007399/w1500_51624375.jpg"
+            },
+            {
+            title: "На грани",
+                year: 2012,
+                                country: "США",
+                genre: "Боевик",
+                duration: "1ч и 49мин",
+                poster: "https://images.kinorium.com/movie/poster/514891/w1500_51643756.jpg"
+            },
+            {
+            title: "В никуда",
+                year: 2023,
+                                country: "Испания",
+                genre: "Драмы",
+                duration: "1ч и 49мин",
+                poster: "https://images.kinorium.com/movie/poster/2868366/w1500_51979955.jpg"
+            },
+             {
+            title: "Разделитель",
+                year: 2011,
+                country: "Канада",
+                genre: "Триллеры",
+                duration: "2ч и 2мин",
+                poster: "https://images.kinorium.com/movie/poster/506038/w1500_51695006.jpg"
+            },
+            {
+            title: "Один Дома 2",
+                year: 1992,
+                country: "США",
+                genre: "Приключения",
+                duration: "2ч",
+                poster: "https://images.kinorium.com/movie/poster/95286/w1500_50185705.jpg"
+            },
+           {
+            title: "Один Дома",
+                year: 1990,
+                country: "США",
+                genre: "Приключения",
+                duration: "1ч",
+                poster: "http://images.kinorium.com/movie/poster/91247/w1500_52070614.jpg"
+            },
+            {
+            title: "Мавританец",
+                year: 2020,
+                country: "США",
+                genre: "Триллеры",
+                duration: "2ч и 9мин",
+                poster: "https://images.kinorium.com/movie/poster/2084468/w1500_47287241.jpg"
+            },
+            {
+            title: "Пропавшая",
+                year: 2022,
+                                country: "США",
+                genre: "Детектив",
+                duration: "1ч и 35мин",
+                poster: "https://images.kinorium.com/movie/poster/2795645/w1500_51639558.jpg"
+            },
+            {
+            title: "Троя",
+                year: 2004,
+                country: "США",
+                genre: "Драмы",
+                duration: "2ч и 43мин",
+                poster: "https://images.kinorium.com/movie/poster/261919/w1500_51808982.jpg"
+            },
+             {
+            title: "Джек Ричер",
+                year: 2022,
+                country: "США",
+                genre: "Криминал",
+                duration: "2сезона",
+                poster: "https://images.kinorium.com/movie/poster/2093615/w1500_50406583.jpg"
+            },
+            {
+            title: "Мама",
+                year: 2013,
+                country: "Испания",
+                genre: "Ужасы",
+                duration: "1ч и 40мин",
+                poster: "https://images.kinorium.com/movie/poster/600488/w1500_52029922.jpg"
+            },
+            {
+            title: "Вивариум",
+                year: 2019,
+                country: "США",
+                genre: "Ужасы",
+                duration: "1ч и 37мин",
+                poster: "https://images.kinorium.com/movie/poster/1662367/w1500_52255434.jpg"
+            },
+             {
+            title: "Зелёная Миля",
+                year: 1999,
+                country: "США",
+                genre: "Драмы",
+                duration: "3ч и 9мин",
+                poster: "https://images.kinorium.com/movie/poster/109273/w1500_51624358.jpg"
+            },
+            {
+            title: "Малыш На Драйве",
+                year: 2017,
+                country: "США",
+                genre: "Криминал",
+                duration: "1ч и 53мин",
+                poster: "https://images.kinorium.com/movie/poster/1447798/w1500_51624772.jpg"
+            }
+        ];
+
+        const moviesGrid = document.querySelector('.movies-grid');
+
+        function createMovieCard(movie) {
+    const card = document.createElement('div');
+    card.classList.add('movie-card', 'loading');
+    card.innerHTML = `
+        <div class="loading-placeholder"></div>
+        <img class="movie-poster" src="${movie.poster}" alt="${movie.title}" style="display: none;">
+        <div class="movie-info">
+            <h2 class="movie-title">${movie.title}</h2>
+            <div class="movie-details">
+                <span class="movie-detail">${movie.year}</span>
+                <span class="movie-detail">${movie.country}</span>
+                <span class="movie-detail">${movie.genre}</span>
+                <span class="movie-detail">${movie.duration}</span>
+            </div>
+        </div>
+    `;
+
+    const poster = card.querySelector('.movie-poster');
+    poster.addEventListener('load', () => {
+        const loadingPlaceholder = card.querySelector('.loading-placeholder');
+        card.removeChild(loadingPlaceholder); // Удаляем загрузочную анимацию
+        poster.style.display = 'block'; // Показываем изображение
+        card.classList.remove('loading');
+        card.classList.add('loaded');
+    });
+
+    return card;
+}
+
+        function loadMovies() {
+            moviesGrid.innerHTML = '';
+            movies.forEach(movie => {
+                const card = createMovieCard(movie);
+                moviesGrid.appendChild(card);
+
+                setTimeout(() => {
+                    card.classList.remove('loading');
+                    card.classList.add('loaded');
+                }, Math.random() * 1000 + 500);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadMovies);
+
+        // Genre filter functionality
+        const genreBtn = document.querySelector('.genre-btn');
+        const genreDropdown = document.querySelector('.genre-dropdown');
+
+        genreBtn.addEventListener('click', () => {
+            genreDropdown.style.display = genreDropdown.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!genreBtn.contains(e.target) && !genreDropdown.contains(e.target)) {
+                genreDropdown.style.display = 'none';
+            }
+        });
+
+        genreDropdown.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                const selectedGenre = e.target.dataset.genre;
+                filterMovies(selectedGenre);
+                genreDropdown.style.display = 'none';
+                genreBtn.textContent = e.target.textContent;
+            }
+        });
+
+        function filterMovies(genre) {
+            moviesGrid.innerHTML = '';
+            const filteredMovies = genre === 'all' 
+                ? movies 
+                : movies.filter(movie => movie.genre.toLowerCase() === genre.toLowerCase());
+            
+            filteredMovies.forEach(movie => {
+                const card = createMovieCard(movie);
+                moviesGrid.appendChild(card);
+
+                setTimeout(() => {
+                    card.classList.remove('loading');
+                    card.classList.add('loaded');
+                }, Math.random() * 1000 + 500);
+            });
+        }
+    </script>
+</body>
+</html>
