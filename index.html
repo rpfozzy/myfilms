@@ -1,3 +1,197 @@
+
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Existing styles here... */
+        
+        /* Restored search button and input styles */
+        .search-btn {
+            -webkit-tap-highlight-color: transparent;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            z-index: 1000;
+              outline: none;
+        }
+
+        .search-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            outline: none;
+        }
+
+        .search-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+
+        .search-container {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 1000;
+            outline: none;
+        }
+
+        .search-input {
+            width: 250px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            outline: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            outline: none;
+            
+        }
+
+        .search-input:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .highlight {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 71, 87, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+            }
+        }
+
+        .exact-match {
+            animation: zoom-pulse 1.5s infinite;
+        }
+
+        @keyframes zoom-pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(0, 255, 0, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 255, 0, 0);
+            }
+        }
+        
+    </style>
+</head>
+<body>
+   
+
+    <!-- Search button and input -->
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Поиск фильма..." />
+    </div>
+    <button class="search-btn" aria-label="Search"></button>
+
+    <script>
+        // Existing JavaScript code here...
+
+        const searchBtn = document.querySelector('.search-btn');
+        const searchContainer = document.querySelector('.search-container');
+        const searchInput = document.querySelector('.search-input');
+
+        searchBtn.addEventListener('click', () => {
+            searchContainer.style.display = searchContainer.style.display === 'flex' ? 'none' : 'flex';
+            if (searchContainer.style.display === 'flex') {
+                searchInput.focus();
+            }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const movieCards = document.querySelectorAll('.movie-card');
+            let matchedCards = [];
+            
+            movieCards.forEach(card => {
+                const title = card.querySelector('.movie-title').textContent.toLowerCase();
+                
+                if (query === '') {
+                    card.classList.remove('highlight', 'exact-match');
+                } else if (title.includes(query)) {
+                    card.classList.add('highlight');
+                    matchedCards.push(card);
+                } else {
+                    card.classList.remove('highlight', 'exact-match');
+                }
+            });
+
+            // If only one movie is found, scroll to it
+            if (matchedCards.length === 1) {
+                matchedCards[0].classList.remove('highlight');
+                matchedCards[0].classList.add('exact-match');
+                setTimeout(() => {
+                    matchedCards[0].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }, 300);
+            }
+        });
+
+        searchInput.addEventListener('blur', () => {
+            if (searchInput.value.trim() === '') {
+                const movieCards = document.querySelectorAll('.movie-card');
+                movieCards.forEach(card => {
+                    card.classList.remove('highlight', 'exact-match');
+                });
+            }
+        });
+        
+    </script>
+</body>
+</html>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -27,12 +221,14 @@
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
             color: var(--text-color);
             min-height: 100vh;
+            outline: none;
         }
 
         .container {
             max-width: 1800px;
             margin: 0 auto;
             padding: 20px;
+            outline: none;
         }
 
         header {
@@ -42,6 +238,7 @@
             padding: 20px 0;
             border-bottom: 2px solid var(--accent-color);
             margin-bottom: 30px;
+            outline: none;
         }
 
         h1 {
@@ -50,7 +247,8 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             color: #00aaff; /* Голубой цвет текста */
-text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Легкая тень для мягкого эффекта */
+
+
         }
 
         .genre-filter {
@@ -68,14 +266,14 @@ text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Легкая тень для м�
             border-radius: 50px;
             text-transform: uppercase;
             letter-spacing: 1px;
-box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с прозрачностью */
+
         }
 
         .genre-btn:hover {
             background-color: var(--text-color);
             color: var(--accent-color);
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+
         }
 
         .genre-dropdown {
@@ -83,7 +281,7 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
             position: absolute;
             background-color: var(--secondary-color);
             min-width: 180px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+
             z-index: 1;
             border-radius: 10px;
             overflow: hidden;
@@ -117,7 +315,7 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
             border-radius: 15px;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+
             position: relative;
             width: 220px;
             height: 380px;
@@ -125,7 +323,7 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
 
         .movie-card:hover {
             transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+
         }
 
         .movie-poster {
@@ -275,7 +473,7 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
                                 country: "Великобритания",
                 genre: "Триллеры",
                 duration: "1ч и 59мин",
-                poster: "https://telegra.ph/file/a12c75c0dd70a9130ff7f.jpg"
+                poster: "https://telegra.ph/file/868496b5bc886e88de26c.jpg"
             },
             {
                 title: "Чужой: Завет",
@@ -398,14 +596,7 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
                 duration: "1ч и 44мин",
                 poster: "https://images.kinorium.com/movie/poster/670910/w1500_50482701.jpg"
             },
-            {
-            title: "Пекло",
-                year: 2007,
-                                country: "США",
-                genre: "Фантастика",
-                duration: "1ч и 47мин",
-                poster: "https://images.kinorium.com/movie/poster/339584/w1500_51627769.jpg"
-            },
+           
              {
             title: "2012",
                 year: 2009,
@@ -519,12 +710,29 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
                 poster: "https://ru-images.kinorium.com/movie/1080/297607.jpg?1576679421"
             },
             {
+                title: "Звёздный Путь",
+                year: 2009,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "2ч и 7мин",
+                poster: "https://telegra.ph/file/ca89b0351f047153138c0.jpg"
+            },
+            
+            {
             title: "Финч",
                 year: 2021,
                                 country: "Великобритания",
                 genre: "Фантастика",
                 duration: "1ч и 55мин",
                 poster: "https://images.kinorium.com/movie/poster/758989/w1500_50000997.jpg"
+            },
+             {
+                title: "Луна 2112",
+                year: 2009,
+                                country: "Великобритания",
+                genre: "Фантастика",
+                duration: "1ч и 37мин",
+                poster: "https://telegra.ph/file/8d093b3fef5040558be6f.jpg"
             },
             {
             title: "Человек-паук: Нет пути домой",
@@ -710,6 +918,14 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
                 duration: "2ч и 10мин",
                 poster: "https://images.kinorium.com/movie/poster/109310/w1500_51983612.jpg"
             },
+             {
+            title: "Пекло",
+                year: 2007,
+                                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 47мин",
+                poster: "https://images.kinorium.com/movie/poster/339584/w1500_51627769.jpg"
+            },
             {
             title: "Мег 2: Бездна",
                 year: 2023,
@@ -749,6 +965,14 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
                 genre: "Фантастика",
                 duration: "1ч и 48мин",
                 poster: "https://images.kinorium.com/movie/poster/117799/w1500_51847199.jpg"
+            },
+             {
+                title: "Последние Дни На Марсе",
+                year: 2013,
+                                country: "Великобритания",
+                genre: "Фантастика",
+                duration: "1ч и 38мин",
+                poster: "https://telegra.ph/file/f4a38e1edd2f9ec43a7a4.jpg"
             },
              {
             title: "Кислород",
@@ -1440,6 +1664,7 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
                 duration: "1ч и 38мин",
                 poster: "https://images.kinorium.com/movie/poster/358190/w1500_50229869.jpg"
             },
+            
             {
             title: "Явление",
                 year: 2008,
@@ -1471,6 +1696,14 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
                 genre: "Криминал",
                 duration: "1ч и 55мин",
                 poster: "https://telegra.ph/file/4cb6f5962b40d3181a4fb.jpg"
+            },
+            {
+                title: "Заражение",
+                year: 2011,
+                                country: "США",
+                genre: "Триллеры",
+                duration: "1ч и 46мин",
+                poster: "https://telegra.ph/file/33caa1d9ffa53ce6c7ecb.jpg"
             },
             {
             title: "Леон",
@@ -1898,4 +2131,4 @@ box-shadow: 0 4px 6px rgba(0, 170, 255, 0.3); /* Голубая тень с пр
     });
 </script>
 </body>
-</html> 
+</html>  
