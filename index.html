@@ -430,6 +430,127 @@
     background-size: 200% 100%;
     animation: loadingAnimation 1.5s infinite;
 }
+.modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal.show {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: var(--secondary-color);
+    padding: 30px;
+    border: 1px solid var(--accent-color);
+    width: 90%;
+    max-width: 800px;
+    border-radius: 20px;
+        max-height: 80vh; /* Ограничиваем высоту модального окна */
+    overflow-y: auto; /* Добавляем прокрутку, если содержимое превышает высоту окна */
+    position: relative;
+    transform: scale(0.7) translateY(-50px);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.modal.show .modal-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.close {
+    color: var(--text-color);
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.close:hover,
+.close:focus {
+    color: var(--accent-color);
+    text-decoration: none;
+    cursor: pointer;
+    transform: scale(1.1) rotate(90deg);
+}
+
+#modalPoster {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 20px;
+
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) 0.2s;
+}
+
+.modal.show #modalPoster {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#modalTitle {
+    color: var(--accent-color);
+    font-size: 2rem;
+    margin-bottom: 15px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) 0.3s;
+}
+
+.modal.show #modalTitle {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#modalDetails {
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-bottom: 15px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) 0.4s;
+}
+
+.modal.show #modalDetails {
+    opacity: 0.8;
+    transform: translateY(0);
+}
+
+#modalDescription {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) 0.5s;
+}
+
+.modal.show #modalDescription {
+    opacity: 1;
+    transform: translateY(0);
+}
     </style>
 </head>
 <body>
@@ -450,6 +571,15 @@
                                                                                 <a href="#" data-genre="детектив">Детектив</a>
                 </div>
             </div>
+            <div id="movieModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <img id="modalPoster" src="" alt="">
+        <h2 id="modalTitle"></h2>
+        <p id="modalDetails"></p>
+        <p id="modalDescription"></p>
+    </div>
+</div>
         </header>
 
         <main class="movies-grid">
@@ -458,24 +588,108 @@
     </div>
 
     <script>
+    const modal = document.getElementById('movieModal');
+const closeBtn = document.getElementsByClassName('close')[0];
+
+function openModal(movie) {
+    document.getElementById('modalPoster').src = movie.poster;
+    document.getElementById('modalTitle').textContent = movie.title;
+
+    const descriptionElement = document.getElementById('modalDescription');
+    descriptionElement.innerHTML = ""; // Очищаем элемент перед добавлением нового контента
+
+    movie.descriptions.forEach(desc => {
+        const p = document.createElement('p');
+        p.textContent = desc;
+        descriptionElement.appendChild(p);
+    });
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+closeBtn.onclick = function() {
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
+}
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 500);
+    }
+}
         const movies = [
+         {
+        title: "Будущие Фильмы",
+        year: 6666,
+        country: "Страна",
+        genre: "Жанр",
+        duration: "Время",
+        poster: "https://telegra.ph/file/f16230c9cedeaddb99b70.jpg",
+ descriptions: [
+            "1. Чужой: Ромул (2024)",
+            "2. Риддик Фурия (2024)",
+            "3. Платформа (октябрь 2024)",
+            "4. Бросок кобры 3 (2024)",
+            "5. Пункт назначения (2025)",
+            "6. Иллюзия обмана 3 (2025)",
+            "7. Чужой Сериал (2025 - ...)",
+            "8. Гренландия: Миграция (2025)",
+            "9. Добро пожаловать в Дерри (2025 - ...)",
+            "10. Форсаж 10 (2026)",
+            "11. Блуждающая Земля 3 (2027)",
+            "12. Район №10 (...)",
+            "13. Грань будущего 2 (...)",
+            "14. Веном: Последний танец (...)",
+            "15. Живая сталь 2 (...)"
+            
+        ]
+    },
+           {
+        title: "Интерстеллар",
+        year: 2014,
+        country: "США",
+        genre: "Фантастика",
+        duration: "2ч и 49мин",
+        poster: "https://telegra.ph/file/db182ed6922f23e809f73.jpg",
+ descriptions: [
+            "Описание 1: Чужой: Ромул – это...",
+            "Описание 2: Во вселенной Чужих...",
+            "Описание 3: Продолжение истории..."
+        ]
+    },
             {
-                title: "Интерстеллар",
-                year: 2014,
-                                country: "США",
-                genre: "Фантастика",
-                duration: "2ч и 49мин",
-                poster: "https://telegra.ph/file/db182ed6922f23e809f73.jpg"
-            },
-            {
-                title: "Чужой: Ромул",
-                year: 2024,
-                                country: "Великобритания",
-                genre: "Триллеры",
-                duration: "1ч и 59мин",
-                poster: "https://telegra.ph/file/868496b5bc886e88de26c.jpg"
-            },
-            {
+        title: "Чужой: Ромул",
+        year: 2024,
+        country: "США",
+        genre: "Фантастика",
+        duration: "2ч и 15мин",
+        poster: "https://telegra.ph/file/5955e0afe79a621b3cee9.jpg",
+        descriptions: [
+            "Фильмы о Чужом в хронологическом порядке:",
+            "1. Чужой: Прометей (2012 год)",
+                        "2. Завет – Пролог (2017 год)", 
+                        "3. Пролог: Тайная Вечеря (2017 год)",
+            "4. Чужой: Завет (2017 год)",
+            "5. Завет: Пришествие (2017 год)", 
+                        "6. Чужой (1979 год)",
+                        "7. Память: Истоки ^Чужого^ / Память: Рождение Чужого (2019 год)",
+                         "8. Чужой: Ромул (2024 год)",
+                         "9. Чужие (1986 год)",
+                         "10. Чужие: Расширенная версия (2024)",
+                         "11. Чужой 3 (1992 год)",
+                         "12. Чужой: Воскрешение (1997 год)"
+                       
+        ]
+    },
+     {
                 title: "Чужой: Завет",
                 year: 2017,
                                 country: "США",
@@ -693,6 +907,14 @@
                 duration: "1ч и 56мин",
                 poster: "https://images.kinorium.com/movie/poster/384525/w1500_51677800.jpg"
             },
+            {
+            title: "Я - легенда",
+                year: 2007,
+                country: "США",
+                genre: "Фантастика",
+                duration: "1ч и 40мин",
+                poster: "https://telegra.ph/file/bf6ad391108337ceab81b.jpg"
+            },
              {
             title: "Новая Эра Z",
                 year: 2016,
@@ -725,6 +947,14 @@
                 genre: "Фантастика",
                 duration: "1ч и 55мин",
                 poster: "https://images.kinorium.com/movie/poster/758989/w1500_50000997.jpg"
+            },
+            {
+            title: "Vизитёры",
+                year: 2009,
+                                country: "США",
+                genre: "Сериалы",
+                duration: "2сезона",
+                poster: "https://telegra.ph/file/fc0ebf189d2e4b787163d.jpg"
             },
              {
                 title: "Луна 2112",
@@ -991,6 +1221,14 @@
                 poster: "https://images.kinorium.com/movie/poster/1608850/w1500_51624873.jpg"
             },
             {
+                title: "1+1",
+                year: 2011,
+                                country: "Франция",
+                genre: "Драмы",
+                duration: "1ч и 52мин",
+                poster: "https://telegra.ph/file/2e1f6678ecda1e8fddb64.jpg"
+            },
+            {
             title: "Аполлон 18",
                 year: 2011,
                 country: "Канада",
@@ -1061,6 +1299,14 @@
                 genre: "Криминал",
                 duration: "1ч и 32мин",
                 poster: "https://images.kinorium.com/movie/poster/234746/w1500_50610032.jpg"
+            },
+            {
+                title: "Стукач",
+                year: 2012,
+                                country: "США",
+                genre: "Боевик",
+                duration: "1ч и 52мин",
+                poster: "https://telegra.ph/file/132ef8d73716f38f4412f.jpg"
             },
             {
             title: "Война Миров",
@@ -1890,6 +2136,7 @@
                 duration: "1ч и 53мин",
                 poster: "https://images.kinorium.com/movie/poster/1447798/w1500_51624772.jpg"
             }
+            
         ];
 
         const moviesGrid = document.querySelector('.movies-grid');
@@ -1914,11 +2161,13 @@
     const poster = card.querySelector('.movie-poster');
     poster.addEventListener('load', () => {
         const loadingPlaceholder = card.querySelector('.loading-placeholder');
-        card.removeChild(loadingPlaceholder); // Удаляем загрузочную анимацию
-        poster.style.display = 'block'; // Показываем изображение
+        card.removeChild(loadingPlaceholder);
+        poster.style.display = 'block';
         card.classList.remove('loading');
         card.classList.add('loaded');
     });
+
+    card.addEventListener('click', () => openModal(movie));
 
     return card;
 }
